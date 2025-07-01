@@ -1,60 +1,87 @@
 #include <iostream>
 #include <string>
+#include <type_traits>
 
 using namespace std;
+void calc(int* mas, string &str);
+
+template<class T, class U>
+void write_mass(T& mas, U arg) {
+    for (auto& ok : mas) {
+        if constexpr (is_same<remove_extent_t<T>, int>::value) {
+            if (ok == 0) {
+                ok = arg;
+                break;
+            }
+        }
+    }
+}
 
 int main() {
-    string ok;
-    bool is_num, num_1 = 0;
-    char mass[] = {'+', '-', '/', '*'};
-    int num = 0, num_2 = 0;
-    char operand;
-    cout << "Привет, введи пример:\n> ";
-    getline(cin, ok);
-    ok.append(" ");
+    bool is_num = false;
 
-    string buffer = "";
-    for (char ch : ok) {
-        if (ch != ' '){
-            if (ch > 47 && ch < 58){
-                is_num = true;
-                buffer += ch;
-            } else {
+    int mas_num[100] = {0};
+    string mas_oper = "";
+
+    string buffer;
+    string input;
+
+    cout << "Введи пример (например: 3 + 5 * 2):\n> ";
+    getline(cin, input);
+    input.append(" ");
+
+    for (char ch : input) {
+        if (isdigit(ch)) {
+            is_num = true;
+            buffer += ch;
+        } else if (ch == '+' || ch == '-' || ch == '*' || ch == '/') {
+            mas_oper += ch ;
+        } else if (ch == ' ') {
+            if (!buffer.empty()) {
+                if (is_num) {
+                    int o = stoi(buffer);
+                    write_mass(mas_num, o);
+
+                buffer.clear();
                 is_num = false;
-            }
-
-        } else if (!buffer.empty() && ch == ' ') {
-            if (is_num){
-                if (num_1) {
-                    num_2 = stoi(buffer);
-                    int temp = 0;
-                    for (char c:mass){
-                        int a = ok.find(c);
-                        if (a != string::npos){
-                            switch (c) {
-                                case '+': num += num_2; break;
-                                case '-': num -= num_2; break;
-                                case '*': num *= num_2; break;
-                                case '/': num /= num_2;
-                                default: break;
-                            }
-                            cout << num << endl;
-                        }
-                    }
-
-                } else {
-                    num = stoi(buffer);
-                    num_1 = !num_1;
                 }
             }
-            cout << "Токен: " << buffer << endl;
-
-            buffer = "";
-
         }
     }
 
-    cout << "= " << num << endl;
+    calc(mas_num, mas_oper);
+    cout << mas_num[0];
 
     return 0;
+}
+
+void calc(int* mas, string &str){
+    char oper [] = {'*', '/','-', '+'};
+
+    while (true){
+        if (str.empty()){
+            break;
+        }
+
+        for (char ch:oper){
+            if (str.find(ch) != string::npos){
+                int a = str.find(ch);
+                switch (ch) {
+                    case '*': mas[a] *= mas[a+1]; break;
+                    case '/': {
+                        if (mas[a] != 0 || mas[a+1] != 0){
+                            mas[a] /= mas[a+1];
+                        }
+                        break;
+                    }
+                    case '-': mas[a] -= mas[a+1]; break;
+                    case '+': mas[a] += mas[a+1];
+                    default: break;
+                }
+
+                mas[a+1] = 0;
+                str.replace(a, 1, "");
+            }
+        }
+    }
 }
