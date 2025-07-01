@@ -55,33 +55,38 @@ int main() {
     return 0;
 }
 
-void calc(int* mas, string &str){
-    char oper [] = {'*', '/','-', '+'};
+void calc(int* mas, string &str) {
+    char oper[] = {'*', '/', '-', '+'};
 
-    while (true){
-        if (str.empty()){
-            break;
-        }
-
-        for (char ch:oper){
-            if (str.find(ch) != string::npos){
-                int a = str.find(ch);
+    while (!str.empty()) {
+        bool found = false;
+        for (char ch : oper) {
+            size_t a = str.find(ch);
+            if (a != string::npos) {
+                found = true;
                 switch (ch) {
-                    case '*': mas[a] *= mas[a+1]; break;
-                    case '/': {
-                        if (mas[a] != 0 || mas[a+1] != 0){
+                    case '*':
+                        mas[a] *= mas[a+1];
+                        break;
+                    case '/':
+                        if (mas[a+1] != 0) {
                             mas[a] /= mas[a+1];
+                        } else {
+                            cout << "Error: division by zero" << endl;
                         }
                         break;
-                    }
-                    case '-': mas[a] -= mas[a+1]; break;
-                    case '+': mas[a] += mas[a+1];
-                    default: break;
+                    case '-':
+                        mas[a] -= mas[a+1];
+                        break;
+                    case '+':
+                        mas[a] += mas[a+1];
+                        break;
                 }
-
                 mas[a+1] = 0;
                 str.replace(a, 1, "");
+                break; // После обработки одной операции — переходим к следующей итерации while
             }
         }
+        if (!found) break;
     }
 }
